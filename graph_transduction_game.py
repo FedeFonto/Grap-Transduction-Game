@@ -4,8 +4,9 @@ import numpy as np
 import h5py
 
 N_START = 0
-N_END = 4
+N_END = 1
 N_CLASS = N_END - N_START + 1
+
 
 def payoff(n):
     payoff_e = np.zeros(N_CLASS)
@@ -18,7 +19,7 @@ def payoff(n):
         # calcolo il payoff mixed (4.4) seconda parte (moltiplico strategia per similarita)
         payoff_m += strategy[n, label[j]] * similarity[n, j]
 
-    #itero su tutti gli elementi non etichettati
+    # itero su tutti gli elementi non etichettati
     for j in range(n_train, n_data):
 
         # calcolo il payoff extreme (4.3) prima parte (similarita[:,label j])
@@ -28,8 +29,6 @@ def payoff(n):
         payoff_m += np.matmul(strategy[n], strategy[j]) * similarity[n, j]
 
     return payoff_e / payoff_m
-
-
 
 
 ### load USPS dataset ###
@@ -73,7 +72,7 @@ n_data = len(data)
 similarity = kernel.rbf_kernel(data, data, gamma=1)
 sub = np.interp(similarity, (similarity.min(), similarity.max()), (0, 1))
 similarity = sub
-print similarity
+# print(similarity)
 strategy = np.array(strategy)
 
 ### Function ###
@@ -82,10 +81,6 @@ count = 0
 norm = 1
 while norm > 0.5 or not_converged != 0:
     not_converged = 0
-    class_n = np.zeros(N_CLASS)
-    for i in range(n_data):
-        class_n[label[i]] += 1
-    #print class_n
 
     new_strategy = np.array(strategy[0:n_data])
     new_label = np.array(label[0:n_data])
@@ -94,8 +89,7 @@ while norm > 0.5 or not_converged != 0:
         max_pos = -1
         max_value = 0
         pf = payoff(i)
-
-        #print pf
+        # print pf
 
         # calcolo la nuova strategia seguendo 4.9 per ogni h
         for h in range(N_CLASS):
@@ -114,19 +108,19 @@ while norm > 0.5 or not_converged != 0:
 
         new_label[i] = max_pos
 
-        #print new_strategy[i]
-        #print max_pos, label[i], test[i-n_train]
+        # print new_strategy[i]
+        # print max_pos, label[i], test[i-n_train]
 
     norm = np.linalg.norm(strategy - new_strategy)
     strategy = new_strategy
     label = new_label
     count += 1
-    print "End iteration {}, label change: {}".format(count, not_converged)
-    print norm
-    accuracy = 0.
-    for i in range(n_train, n_data):
-        if label[i] == test[i-n_train]:
-            accuracy += 1
-    accuracy = accuracy / (n_data - n_train)
-    print "Accuracy: {}\n".format(accuracy)
+    print("End iteration {}, label change: {}".format(count, not_converged))
+    print(norm)
 
+accuracy = 0.
+for i in range(n_train, n_data):
+    if label[i] == test[i-n_train]:
+        accuracy += 1
+accuracy = accuracy / (n_data - n_train)
+print("Accuracy: {}\n".format(accuracy))
