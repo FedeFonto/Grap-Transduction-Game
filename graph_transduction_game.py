@@ -1,4 +1,3 @@
-import random as rand
 import sklearn.metrics.pairwise as kernel
 import numpy as np
 import h5py
@@ -24,7 +23,7 @@ strategy = []
 label = []
 
 for i in range(len(Y_tr)):
-    if Y_tr[i] > N_START -1 and Y_tr[i] < N_END + 1:
+    if N_END + 1 > Y_tr[i] > N_START - 1:
         data.append(X_tr[i])
         zero = np.zeros(N_CLASS)
         label.append(Y_tr[i] - N_START)
@@ -34,7 +33,7 @@ for i in range(len(Y_tr)):
 n_train = len(data)
 
 for i in range(len(Y_te)):
-    if Y_te[i] > N_START -1  and Y_te[i] < N_END + 1 :
+    if N_END + 1 > Y_te[i] > N_START - 1:
         data.append(X_te[i])
         uniform = np.zeros(N_CLASS)
         label.append(Y_te[i] - N_START)
@@ -50,26 +49,16 @@ strategy = np.array(strategy)
 count = 0
 norm = 1
 
-class_n = np.zeros(N_CLASS)
-for i in range(n_data):
-    class_n[label[i]] += 1
-
 while norm > 0.01:
     q = np.dot(similarity, strategy)
     new_strategy = np.multiply(strategy, q)
-    for k in range(len(new_strategy)):
-        new_strategy[k] = new_strategy[k] / sum(new_strategy[k])
+    new_strategy /= new_strategy.sum(axis=1, keepdims=True)
 
     norm = np.linalg.norm(strategy - new_strategy)
     strategy = new_strategy
     count += 1
-    print "End iteration {}".format(count)
-    print norm
+    print("End iteration {}".format(count))
+    print(norm)
 
-accuracy = 0.
-for i in range(n_data):
-    if strategy[i].argmax() == label[i]:
-        accuracy += 1
-accuracy = accuracy / (n_data)
-print "\nAccuracy: {}\n".format(accuracy)
-
+accuracy = np.sum(strategy.argmax(axis=1) == label) / float(n_data)
+print("\nAccuracy: {}\n".format(accuracy))
